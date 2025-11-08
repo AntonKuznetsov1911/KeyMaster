@@ -1,0 +1,824 @@
+/* ===== Общие стили ===== */
+:root {
+    --primary-color: #6366f1;
+    --secondary-color: #8b5cf6;
+    --success-color: #10b981;
+    --error-color: #ef4444;
+    --warning-color: #f59e0b;
+
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark-theme {
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+    --bg-tertiary: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --border-color: #4b5563;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ===== Header ===== */
+.header {
+    background-color: var(--bg-primary);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background-color 0.3s;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    font-size: 2rem;
+}
+
+.logo h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.theme-toggle {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1.25rem;
+    transition: all 0.3s;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background: var(--primary-color);
+}
+
+/* ===== Main Menu ===== */
+.main-menu {
+    padding: 3rem 2rem;
+}
+
+.menu-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.menu-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    font-weight: 700;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.menu-card {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: var(--shadow);
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary-color);
+}
+
+.card-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.menu-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.menu-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* ===== Category Selection ===== */
+.category-selection {
+    padding: 2rem;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.category-card {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.category-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    display: inline-block;
+}
+
+.category-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* ===== Training Screen ===== */
+.training-screen {
+    padding: 2rem;
+}
+
+.training-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.training-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.category-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+}
+
+.progress-indicator {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.training-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* ===== Challenge Area ===== */
+.challenge-area {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+}
+
+.command-description {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+.expected-keys {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.key {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    box-shadow: var(--shadow);
+    min-width: 3rem;
+    text-align: center;
+}
+
+.key.pressed {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-color: var(--primary-color);
+    animation: pulse 0.5s;
+}
+
+.instruction {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.pressed-keys {
+    min-height: 4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.feedback {
+    min-height: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.feedback.correct {
+    color: var(--success-color);
+    animation: bounce 0.5s;
+}
+
+.feedback.wrong {
+    color: var(--error-color);
+    animation: shake 0.5s;
+}
+
+/* ===== Keyboard ===== */
+.keyboard-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.keyboard {
+    display: inline-block;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.keyboard-key {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 0.35rem;
+    padding: 0.75rem 0.5rem;
+    min-width: 3.5em;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+    cursor: default;
+    user-select: none;
+}
+
+.keyboard-key.key-pressed {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(2px);
+}
+
+.keyboard-key.key-expected {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    border-color: #f59e0b;
+    animation: glow 1.5s infinite;
+}
+
+.keyboard-key.key-correct {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border-color: #059669;
+    animation: bounce 0.5s;
+}
+
+.keyboard-key.key-wrong {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border-color: #dc2626;
+    animation: shake 0.5s;
+}
+
+/* ===== Buttons ===== */
+.back-button {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: all 0.3s;
+    margin-bottom: 1.5rem;
+}
+
+.back-button:hover {
+    background: var(--bg-secondary);
+    transform: translateX(-3px);
+}
+
+.training-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+}
+
+/* ===== Reference Screen ===== */
+.reference-screen {
+    padding: 2rem;
+}
+
+.reference-screen h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.reference-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.search-input,
+.category-filter {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.search-input:focus,
+.category-filter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.shortcuts-section {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.shortcuts-section-header {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 2rem;
+}
+
+.shortcut-item:last-child {
+    border-bottom: none;
+}
+
+.shortcut-keys {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.shortcut-description {
+    flex: 1;
+    color: var(--text-secondary);
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+}
+
+/* ===== Stats Screen ===== */
+.stats-screen {
+    padding: 2rem;
+}
+
+.stats-screen h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.stat-card-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-card-label {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.achievements-section,
+.leaderboard-section {
+    margin-bottom: 3rem;
+}
+
+.achievements-section h3,
+.leaderboard-section h3 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.achievement-card {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.achievement-card.unlocked {
+    border-color: var(--success-color);
+    background: linear-gradient(135deg, var(--bg-primary), rgba(16, 185, 129, 0.1));
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.achievement-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.achievement-name {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.achievement-description {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* ===== Modal ===== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s;
+}
+
+.modal-content {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    padding: 3rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp 0.3s;
+}
+
+.modal-content h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.results-stats {
+    margin-bottom: 2rem;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-label {
+    color: var(--text-secondary);
+}
+
+.result-value {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* ===== Animations ===== */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.8); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem;
+    }
+
+    .logo h1 {
+        font-size: 1.25rem;
+    }
+
+    .menu-title {
+        font-size: 1.75rem;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .training-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .challenge-area {
+        padding: 1.5rem;
+    }
+
+    .command-description {
+        font-size: 1.25rem;
+    }
+
+    .keyboard-container {
+        padding: 1rem;
+        overflow-x: auto;
+    }
+
+    .keyboard-key {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.25rem;
+        min-width: 2.5em;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        padding: 2rem 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .expected-keys {
+        flex-wrap: wrap;
+    }
+
+    .training-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .reference-controls {
+        flex-direction: column;
+    }
+
+    .shortcut-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+}
