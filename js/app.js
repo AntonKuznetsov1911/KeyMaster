@@ -3,6 +3,7 @@ class KeyMasterApp {
     constructor() {
         this.currentMode = 'menu';
         this.currentCategory = null;
+        this.currentLevel = null; // easy, medium, hard
         this.currentShortcuts = [];
         this.currentQuestionIndex = 0;
         this.pressedKeys = new Set();
@@ -16,12 +17,29 @@ class KeyMasterApp {
         this.bestStreak = 0;
         this.isWaitingForRelease = false;
         this.keyPressTimeout = null;
+        this.nextQuestionTimeout = null;
+        this.questionTimerInterval = null;
 
         // Визуальная клавиатура
         this.visualKeyboard = null;
 
+        // Звуковые эффекты
+        this.sounds = new SoundEffects();
+
+        // Настройки приложения
+        this.settings = this.loadSettings();
+
         // Статистика (сохраняется в localStorage)
         this.stats = this.loadStats();
+
+        // Избранные команды
+        this.favorites = this.loadFavorites();
+
+        // История тренировок
+        this.history = this.loadHistory();
+
+        // Прогресс по категориям
+        this.categoryProgress = this.loadCategoryProgress();
 
         this.init();
     }
@@ -43,13 +61,55 @@ class KeyMasterApp {
 
         // Кнопки навигации
         document.getElementById('backToMenu')?.addEventListener('click', () => this.showMainMenu());
-        document.getElementById('backToCategories')?.addEventListener('click', () => this.showCategorySelection());
+        document.getElementById('backToCategories')?.addEventListener('click', () => this.showLevelSelection());
+        document.getElementById('backToCategories2')?.addEventListener('click', () => this.showCategorySelection());
         document.getElementById('backFromReference')?.addEventListener('click', () => this.showMainMenu());
         document.getElementById('backFromStats')?.addEventListener('click', () => this.showMainMenu());
+
+        // Кнопки выбора уровня
+        document.querySelectorAll('.level-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const level = e.currentTarget.dataset.level;
+                this.selectLevel(level);
+            });
+        });
 
         // Кнопки тренировки
         document.getElementById('skipButton')?.addEventListener('click', () => this.skipQuestion());
         document.getElementById('hintButton')?.addEventListener('click', () => this.showHint());
+        document.getElementById('checkButton')?.addEventListener('click', () => this.checkAnswerManually());
+        document.getElementById('clearButton')?.addEventListener('click', () => this.clearSelection());
+        document.getElementById('favoriteButton')?.addEventListener('click', () => this.toggleFavorite());
+
+        // Настройки
+        document.getElementById('settingsButton')?.addEventListener('click', () => this.showSettings());
+        document.getElementById('closeSettings')?.addEventListener('click', () => this.closeSettings());
+
+        // Обработчики настроек
+        document.querySelectorAll('input[name="questionCount"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.settings.questionCount = e.target.value;
+                this.saveSettings();
+            });
+        });
+
+        document.querySelectorAll('input[name="autoAdvanceTime"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.settings.autoAdvanceTime = parseFloat(e.target.value);
+                this.saveSettings();
+            });
+        });
+
+        document.getElementById('autoAdvanceToggle')?.addEventListener('change', (e) => {
+            this.settings.autoAdvance = e.target.checked;
+            this.saveSettings();
+        });
+
+        document.getElementById('soundToggle')?.addEventListener('change', (e) => {
+            this.settings.soundEnabled = e.target.checked;
+            this.sounds.setEnabled(e.target.checked);
+            this.saveSettings();
+        });
 
         // Переключатель темы
         document.getElementById('themeToggle')?.addEventListener('click', () => this.toggleTheme());
@@ -80,6 +140,15 @@ class KeyMasterApp {
                 this.currentMode = mode;
                 this.showCategorySelection();
                 break;
+            case 'exam':
+                console.log('📋 Выбран режим Экзамен из меню');
+                this.currentMode = 'exam';
+                console.log('✅ currentMode установлен в:', this.currentMode);
+                this.showLevelSelection();
+                break;
+            case 'favorites':
+                this.startFavorites();
+                break;
             case 'reference':
                 this.showReference();
                 break;
@@ -101,6 +170,24 @@ class KeyMasterApp {
         this.renderCategories();
     }
 
+    showLevelSelection() {
+        this.hideAllScreens();
+        document.getElementById('levelSelection').classList.remove('hidden');
+    }
+
+    selectLevel(level) {
+        this.currentLevel = level;
+
+        // Начать тренировку/практику/экзамен в зависимости от режима
+        if (this.currentMode === 'exam') {
+            this.startExam(level);
+        } else if (this.currentMode === 'practice') {
+            this.startPractice(this.currentCategory, level);
+        } else {
+            this.startTraining(this.currentCategory, level);
+        }
+    }
+
     renderCategories() {
         const grid = document.getElementById('categoriesGrid');
         grid.innerHTML = '';
@@ -118,19 +205,29 @@ class KeyMasterApp {
                 <p>${category.shortcuts.length} команд</p>
             `;
             card.addEventListener('click', () => {
-                if (this.currentMode === 'practice') {
-                    this.startPractice(category.id);
-                } else {
-                    this.startTraining(category.id);
-                }
+                this.currentCategory = category.id;
+                this.showLevelSelection();
             });
             grid.appendChild(card);
         });
     }
 
-    startTraining(categoryId) {
+    startTraining(categoryId, level = 'medium') {
         this.currentCategory = categoryId;
-        this.currentShortcuts = getShortcutsForCategory(categoryId);
+        this.currentLevel = level;
+
+        // Получить все команды для категории
+        let shortcuts = getShortcutsForCategory(categoryId);
+
+        // Фильтровать по уровню сложности
+        if (level === 'easy') {
+            shortcuts = shortcuts.filter(s => s.difficulty === 'easy');
+        } else if (level === 'medium') {
+            shortcuts = shortcuts.filter(s => s.difficulty === 'easy' || s.difficulty === 'medium');
+        }
+        // Для hard - все команды
+
+        this.currentShortcuts = shortcuts;
         this.currentQuestionIndex = 0;
         this.score = 0;
         this.correctAnswers = 0;
@@ -145,14 +242,44 @@ class KeyMasterApp {
         // Инициализация визуальной клавиатуры
         if (!this.visualKeyboard) {
             this.visualKeyboard = new VisualKeyboard('visualKeyboard');
+            // Устанавливаем callback для кликов мышкой
+            this.visualKeyboard.setClickCallback((clickedKeys) => {
+                this.handleMouseKeyClick(clickedKeys);
+            });
         }
 
         this.showQuestion();
     }
 
-    startPractice(categoryId) {
+    startPractice(categoryId, level = 'medium') {
         this.currentCategory = categoryId;
-        this.currentShortcuts = getRandomShortcuts(10, categoryId);
+        this.currentLevel = level;
+
+        // Получить случайные команды для категории
+        let shortcuts = getRandomShortcuts(10, categoryId);
+
+        // Фильтровать по уровню сложности
+        if (level === 'easy') {
+            shortcuts = shortcuts.filter(s => s.difficulty === 'easy');
+        } else if (level === 'medium') {
+            shortcuts = shortcuts.filter(s => s.difficulty === 'easy' || s.difficulty === 'medium');
+        }
+        // Для hard - все команды
+
+        // Если после фильтрации осталось мало команд, получить больше
+        if (shortcuts.length < 10) {
+            let allShortcuts = getShortcutsForCategory(categoryId);
+            if (level === 'easy') {
+                allShortcuts = allShortcuts.filter(s => s.difficulty === 'easy');
+            } else if (level === 'medium') {
+                allShortcuts = allShortcuts.filter(s => s.difficulty === 'easy' || s.difficulty === 'medium');
+            }
+
+            // Перемешать и взять 10
+            shortcuts = allShortcuts.sort(() => Math.random() - 0.5).slice(0, 10);
+        }
+
+        this.currentShortcuts = shortcuts;
         this.currentQuestionIndex = 0;
         this.score = 0;
         this.correctAnswers = 0;
@@ -166,6 +293,9 @@ class KeyMasterApp {
 
         if (!this.visualKeyboard) {
             this.visualKeyboard = new VisualKeyboard('visualKeyboard');
+            this.visualKeyboard.setClickCallback((clickedKeys) => {
+                this.handleMouseKeyClick(clickedKeys);
+            });
         }
 
         this.showQuestion();
@@ -175,6 +305,12 @@ class KeyMasterApp {
         if (this.currentQuestionIndex >= this.currentShortcuts.length) {
             this.showResults();
             return;
+        }
+
+        // Очистить таймер автоперехода если он есть
+        if (this.nextQuestionTimeout) {
+            clearTimeout(this.nextQuestionTimeout);
+            this.nextQuestionTimeout = null;
         }
 
         const shortcut = this.currentShortcuts[this.currentQuestionIndex];
@@ -187,29 +323,86 @@ class KeyMasterApp {
 
         // Показать ожидаемые клавиши
         const expectedKeysContainer = document.getElementById('expectedKeys');
-        expectedKeysContainer.innerHTML = shortcut.keys.map(key =>
-            `<span class="key">${key}</span>`
-        ).join(' + ');
 
-        // Очистить нажатые клавиши
+        // Отладка: вывести текущий режим
+        console.log('📌 Текущий режим:', this.currentMode);
+
+        // В режиме практики и экзамена скрываем ожидаемые клавиши (показываем только по подсказке)
+        if (this.currentMode === 'practice' || this.currentMode === 'exam' || this.currentMode === 'favorites') {
+            expectedKeysContainer.innerHTML = '<span class="key hint-placeholder">❓ Нажми "Подсказка"</span>';
+            expectedKeysContainer.classList.add('hidden-keys');
+            console.log('🔒 Клавиши скрыты (режим:', this.currentMode + ')');
+        } else {
+            // В режиме обучения показываем
+            expectedKeysContainer.innerHTML = shortcut.keys.map(key =>
+                `<span class="key">${key}</span>`
+            ).join(' + ');
+            expectedKeysContainer.classList.remove('hidden-keys');
+            console.log('👁️ Клавиши показаны (режим:', this.currentMode + ')');
+        }
+
+        // Очистить нажатые клавиши и демонстрацию
         document.getElementById('pressedKeys').innerHTML = '';
         document.getElementById('feedback').innerHTML = '';
         document.getElementById('feedback').className = 'feedback';
+        document.getElementById('commandDemo').classList.remove('show');
 
-        // Подсветить ожидаемые клавиши на визуальной клавиатуре
+        // В режиме обучения подсвечиваем клавиши, в остальных режимах - нет
         if (this.visualKeyboard) {
-            this.visualKeyboard.highlightExpectedKeys(shortcut.keys);
+            if (this.currentMode === 'practice' || this.currentMode === 'exam' || this.currentMode === 'favorites') {
+                this.visualKeyboard.clearAllHighlights();
+                console.log('⌨️ Подсветка клавиатуры выключена');
+            } else {
+                this.visualKeyboard.highlightExpectedKeys(shortcut.keys);
+                console.log('⌨️ Клавиши подсвечены:', shortcut.keys);
+            }
         }
 
         // Сбросить нажатые клавиши
         this.pressedKeys.clear();
         this.isWaitingForRelease = false;
 
+        // Очистить клики мышкой
+        if (this.visualKeyboard) {
+            this.visualKeyboard.clearClicks();
+        }
+
         // Запустить таймер вопроса
         this.questionStartTime = Date.now();
+        this.startQuestionTimer();
 
         // Обновить статистику
         this.updateTrainingStats();
+    }
+
+    startQuestionTimer() {
+        // Очистить предыдущий таймер если есть
+        if (this.questionTimerInterval) {
+            clearInterval(this.questionTimerInterval);
+        }
+
+        const timerElement = document.getElementById('timerValue');
+        if (!timerElement) return;
+
+        this.questionTimerInterval = setInterval(() => {
+            const elapsed = (Date.now() - this.questionStartTime) / 1000;
+            timerElement.textContent = elapsed.toFixed(1) + 's';
+
+            // Цветовая индикация скорости
+            timerElement.classList.remove('fast', 'slow');
+            if (elapsed < 3) {
+                timerElement.classList.add('fast');
+            } else if (elapsed > 7) {
+                timerElement.classList.add('slow');
+            }
+        }, 100);
+    }
+
+    stopQuestionTimer() {
+        if (this.questionTimerInterval) {
+            clearInterval(this.questionTimerInterval);
+            this.questionTimerInterval = null;
+        }
     }
 
     handleKeyDown(e) {
@@ -218,14 +411,14 @@ class KeyMasterApp {
             return;
         }
 
+        // ВСЕГДА предотвращать действия по умолчанию в режиме тренировки
+        e.preventDefault();
+        e.stopPropagation();
+
         // Игнорировать, если ждём отпускания клавиш
         if (this.isWaitingForRelease) {
-            e.preventDefault();
             return;
         }
-
-        // Предотвратить действия по умолчанию
-        e.preventDefault();
 
         // Добавить клавишу в набор нажатых
         const key = this.normalizeKey(e);
@@ -255,6 +448,10 @@ class KeyMasterApp {
             return;
         }
 
+        // Предотвращать действия по умолчанию в режиме тренировки
+        e.preventDefault();
+        e.stopPropagation();
+
         const key = this.normalizeKey(e);
 
         // Убрать подсветку
@@ -280,24 +477,47 @@ class KeyMasterApp {
         const key = event.key;
         const code = event.code;
 
-        // Модификаторы
-        if (event.ctrlKey && (key === 'Control' || code.includes('Control'))) return 'Ctrl';
-        if (event.altKey && (key === 'Alt' || code.includes('Alt'))) return 'Alt';
-        if (event.shiftKey && (key === 'Shift' || code.includes('Shift'))) return 'Shift';
-        if (event.metaKey && (key === 'Meta' || code.includes('Meta'))) return 'Win';
+        // Сначала проверяем, является ли это сама клавиша модификатор
+        if (key === 'Control' || code.includes('Control')) return 'Ctrl';
+        if (key === 'Alt' || code.includes('Alt')) return 'Alt';
+        if (key === 'Shift' || code.includes('Shift')) return 'Shift';
+        if (key === 'Meta' || code.includes('Meta') || key === 'OS') return 'Win';
 
         // Специальные клавиши
         const specialKeys = {
             'ArrowUp': '↑',
             'ArrowDown': '↓',
             'ArrowLeft': '←',
-            'ArrowRight': '→'
+            'ArrowRight': '→',
+            'Escape': 'Esc',
+            'Delete': 'Delete',
+            'Backspace': 'Backspace',
+            'Enter': 'Enter',
+            ' ': 'Space',
+            'PageUp': 'Page Up',
+            'PageDown': 'Page Down',
+            'Home': 'Home',
+            'End': 'End',
+            'Tab': 'Tab',
+            '`': '`',
+            '-': '-',
+            '=': '+',
+            '+': '+'
         };
 
         if (specialKeys[key]) return specialKeys[key];
 
-        // Обычные клавиши
-        return key.length === 1 ? key.toUpperCase() : key;
+        // F-клавиши
+        if (key.startsWith('F') && key.length <= 3) {
+            return key;
+        }
+
+        // Обычные клавиши - всегда в верхнем регистре
+        if (key.length === 1) {
+            return key.toUpperCase();
+        }
+
+        return key;
     }
 
     updatePressedKeysDisplay() {
@@ -316,6 +536,9 @@ class KeyMasterApp {
 
         const isCorrect = this.arraysEqual(expected.sort(), pressed.sort());
 
+        // Остановить таймер
+        this.stopQuestionTimer();
+
         // Записать время ответа
         const timeSpent = Date.now() - this.questionStartTime;
         this.questionTimes.push(timeSpent);
@@ -327,9 +550,21 @@ class KeyMasterApp {
         if (isCorrect) {
             this.correctAnswers++;
             this.score += this.calculatePoints(timeSpent, shortcut.difficulty);
+
+            const oldStreak = this.currentStreak;
             this.currentStreak++;
+
             if (this.currentStreak > this.bestStreak) {
                 this.bestStreak = this.currentStreak;
+            }
+
+            // Воспроизвести звук
+            this.sounds.playCorrect();
+
+            // Анимация милестоунов серии
+            if (this.currentStreak === 5 || this.currentStreak === 10 || this.currentStreak === 20) {
+                this.sounds.playMilestone();
+                this.showStreakMilestone(this.currentStreak);
             }
 
             // Сохранить в общую статистику
@@ -338,9 +573,15 @@ class KeyMasterApp {
             if (this.currentStreak > this.stats.bestStreak) {
                 this.stats.bestStreak = this.currentStreak;
             }
+
+            // Обновить прогресс категории
+            this.updateCategoryProgress(this.currentCategory);
         } else {
             this.currentStreak = 0;
             this.stats.totalAttempts++;
+
+            // Воспроизвести звук ошибки
+            this.sounds.playWrong();
         }
 
         this.saveStats();
@@ -351,8 +592,42 @@ class KeyMasterApp {
             this.visualKeyboard.showResult(pressed, expected, isCorrect);
         }
 
-        // Установить флаг ожидания отпускания
-        this.isWaitingForRelease = true;
+        // Если ответ правильный - автоматический переход
+        if (isCorrect && this.settings.autoAdvance) {
+            this.isWaitingForRelease = true;
+
+            // Очистить предыдущий таймер, если есть
+            if (this.nextQuestionTimeout) {
+                clearTimeout(this.nextQuestionTimeout);
+            }
+
+            // Установить таймер на автопереход (используем настройки)
+            const delay = this.settings.autoAdvanceTime * 1000;
+            this.nextQuestionTimeout = setTimeout(() => {
+                this.isWaitingForRelease = false;
+                this.pressedKeys.clear();
+                this.nextQuestion();
+            }, delay);
+        } else if (!isCorrect) {
+            // При неправильном ответе - мгновенный сброс через 1 секунду
+            this.isWaitingForRelease = true;
+
+            // Очистить предыдущий таймер, если есть
+            if (this.nextQuestionTimeout) {
+                clearTimeout(this.nextQuestionTimeout);
+            }
+
+            // Мгновенный сброс и повтор того же вопроса
+            this.nextQuestionTimeout = setTimeout(() => {
+                this.isWaitingForRelease = false;
+                this.pressedKeys.clear();
+                // Показать тот же вопрос снова (не увеличиваем индекс)
+                this.showQuestion();
+            }, 1000);
+        } else if (isCorrect && !this.settings.autoAdvance) {
+            // Автопереход отключен - просто ждем
+            this.isWaitingForRelease = false;
+        }
     }
 
     showFeedback(isCorrect) {
@@ -361,9 +636,78 @@ class KeyMasterApp {
         if (isCorrect) {
             feedbackElement.innerHTML = '<div class="feedback-correct">✅ Правильно!</div>';
             feedbackElement.className = 'feedback correct';
+
+            // Показать демонстрацию команды
+            this.showCommandDemo();
         } else {
             feedbackElement.innerHTML = '<div class="feedback-wrong">❌ Неправильно</div>';
             feedbackElement.className = 'feedback wrong';
+
+            // Скрыть демонстрацию при неправильном ответе
+            document.getElementById('commandDemo').classList.remove('show');
+        }
+    }
+
+    showCommandDemo() {
+        const shortcut = this.currentShortcuts[this.currentQuestionIndex];
+        const demoElement = document.getElementById('commandDemo');
+
+        // Определяем демонстрацию на основе описания команды
+        const demoContent = this.getCommandDemoContent(shortcut);
+
+        demoElement.innerHTML = `
+            <div class="command-demo-content">
+                <div class="command-demo-icon">${demoContent.icon}</div>
+                <div class="command-demo-text">${demoContent.text}</div>
+            </div>
+        `;
+        demoElement.classList.add('show');
+    }
+
+    getCommandDemoContent(shortcut) {
+        const description = shortcut.description.toLowerCase();
+
+        // Определяем тип команды и возвращаем соответствующую демонстрацию
+        if (description.includes('копировать') || description.includes('скопировать')) {
+            return { icon: '📋', text: '✨ Текст скопирован в буфер обмена' };
+        } else if (description.includes('вставить')) {
+            return { icon: '📄', text: '✨ Текст вставлен из буфера' };
+        } else if (description.includes('вырезать')) {
+            return { icon: '✂️', text: '✨ Текст вырезан в буфер обмена' };
+        } else if (description.includes('отменить')) {
+            return { icon: '↩️', text: '✨ Последнее действие отменено' };
+        } else if (description.includes('повторить')) {
+            return { icon: '↪️', text: '✨ Действие повторено' };
+        } else if (description.includes('выделить')) {
+            return { icon: '🔲', text: '✨ Содержимое выделено' };
+        } else if (description.includes('сохранить')) {
+            return { icon: '💾', text: '✨ Документ сохранён' };
+        } else if (description.includes('найти') || description.includes('поиск')) {
+            return { icon: '🔍', text: '✨ Открыто окно поиска' };
+        } else if (description.includes('печать')) {
+            return { icon: '🖨️', text: '✨ Открыто окно печати' };
+        } else if (description.includes('закрыть')) {
+            return { icon: '❌', text: '✨ Окно/вкладка закрыта' };
+        } else if (description.includes('открыть')) {
+            return { icon: '📂', text: '✨ Открыто новое окно' };
+        } else if (description.includes('переключ')) {
+            return { icon: '🔄', text: '✨ Выполнено переключение' };
+        } else if (description.includes('скриншот') || description.includes('снимок')) {
+            return { icon: '📸', text: '✨ Скриншот создан' };
+        } else if (description.includes('полужирный') || description.includes('жирный')) {
+            return { icon: '🅱️', text: '✨ Текст стал полужирным' };
+        } else if (description.includes('курсив')) {
+            return { icon: '🆎', text: '✨ Текст стал курсивом' };
+        } else if (description.includes('подчёрк')) {
+            return { icon: 'U̲', text: '✨ Текст подчёркнут' };
+        } else if (description.includes('увеличить')) {
+            return { icon: '🔍➕', text: '✨ Масштаб увеличен' };
+        } else if (description.includes('уменьшить')) {
+            return { icon: '🔍➖', text: '✨ Масштаб уменьшен' };
+        } else if (description.includes('форматиров')) {
+            return { icon: '✨', text: '✨ Код отформатирован' };
+        } else {
+            return { icon: '⚡', text: `✨ ${shortcut.description}` };
         }
     }
 
@@ -407,6 +751,18 @@ class KeyMasterApp {
 
         document.getElementById('accuracy').textContent = accuracy + '%';
         document.getElementById('score').textContent = this.score;
+        document.getElementById('streakValue').textContent = this.currentStreak + ' 🔥';
+    }
+
+    showStreakMilestone(streak) {
+        const streakStat = document.getElementById('streakStat');
+        if (!streakStat) return;
+
+        streakStat.classList.add('milestone');
+
+        setTimeout(() => {
+            streakStat.classList.remove('milestone');
+        }, 600);
     }
 
     nextQuestion() {
@@ -423,9 +779,53 @@ class KeyMasterApp {
 
     showHint() {
         const shortcut = this.currentShortcuts[this.currentQuestionIndex];
+
+        // Показать комбинацию клавиш
+        const expectedKeysContainer = document.getElementById('expectedKeys');
+        expectedKeysContainer.innerHTML = shortcut.keys.map(key =>
+            `<span class="key">${key}</span>`
+        ).join(' + ');
+        expectedKeysContainer.classList.remove('hidden-keys');
+
+        // Подсветить на визуальной клавиатуре
         if (this.visualKeyboard) {
             this.visualKeyboard.highlightExpectedKeys(shortcut.keys);
         }
+    }
+
+    // Обработка кликов мышкой по клавишам
+    handleMouseKeyClick(clickedKeys) {
+        // Синхронизируем с набором нажатых клавиш
+        this.pressedKeys = new Set(clickedKeys);
+        this.updatePressedKeysDisplay();
+    }
+
+    // Проверка ответа вручную (по кнопке "Проверить")
+    checkAnswerManually() {
+        if (this.isWaitingForRelease) {
+            return; // Уже проверяем или ждем
+        }
+
+        if (this.pressedKeys.size === 0 && this.visualKeyboard) {
+            // Используем клавиши из визуальной клавиатуры
+            const clickedKeys = this.visualKeyboard.getClickedKeys();
+            if (clickedKeys.length === 0) {
+                return; // Ничего не выбрано
+            }
+            this.pressedKeys = new Set(clickedKeys);
+        }
+
+        // Проверяем ответ
+        this.checkAnswer();
+    }
+
+    // Очистить выбор клавиш
+    clearSelection() {
+        this.pressedKeys.clear();
+        if (this.visualKeyboard) {
+            this.visualKeyboard.clearClicks();
+        }
+        this.updatePressedKeysDisplay();
     }
 
     showResults() {
@@ -439,6 +839,24 @@ class KeyMasterApp {
         document.getElementById('finalScore').textContent = this.score;
         document.getElementById('finalCorrect').textContent = `${this.correctAnswers}/${this.totalQuestions}`;
         document.getElementById('avgTime').textContent = avgTime + 's';
+        document.getElementById('finalStreak').textContent = this.bestStreak + ' 🔥';
+
+        // Воспроизвести звук завершения
+        this.sounds.playComplete();
+
+        // Сохранить в историю
+        this.saveToHistory({
+            date: new Date().toISOString(),
+            mode: this.currentMode,
+            category: this.currentCategory,
+            level: this.currentLevel,
+            accuracy: accuracy,
+            score: this.score,
+            correctAnswers: this.correctAnswers,
+            totalQuestions: this.totalQuestions,
+            avgTime: avgTime,
+            bestStreak: this.bestStreak
+        });
 
         document.getElementById('resultsModal').classList.remove('hidden');
     }
@@ -549,6 +967,12 @@ class KeyMasterApp {
 
         // Достижения
         this.renderAchievements();
+
+        // История тренировок
+        this.renderHistory();
+
+        // Прогресс по категориям
+        this.renderCategoryProgress();
     }
 
     renderAchievements() {
@@ -579,6 +1003,7 @@ class KeyMasterApp {
     hideAllScreens() {
         document.getElementById('mainMenu').classList.add('hidden');
         document.getElementById('categorySelection').classList.add('hidden');
+        document.getElementById('levelSelection').classList.add('hidden');
         document.getElementById('trainingScreen').classList.add('hidden');
         document.getElementById('referenceScreen').classList.add('hidden');
         document.getElementById('statsScreen').classList.add('hidden');
@@ -622,6 +1047,308 @@ class KeyMasterApp {
 
     saveStats() {
         localStorage.setItem('keymaster-stats', JSON.stringify(this.stats));
+    }
+
+    // Настройки
+    loadSettings() {
+        const defaultSettings = {
+            questionCount: '10',
+            autoAdvance: true,
+            autoAdvanceTime: 3.5,
+            soundEnabled: true
+        };
+
+        const saved = localStorage.getItem('keymaster-settings');
+        return saved ? JSON.parse(saved) : defaultSettings;
+    }
+
+    saveSettings() {
+        localStorage.setItem('keymaster-settings', JSON.stringify(this.settings));
+    }
+
+    showSettings() {
+        document.getElementById('settingsModal').classList.remove('hidden');
+
+        // Установить текущие значения
+        document.querySelectorAll('input[name="questionCount"]').forEach(radio => {
+            radio.checked = radio.value === this.settings.questionCount;
+        });
+
+        document.querySelectorAll('input[name="autoAdvanceTime"]').forEach(radio => {
+            radio.checked = parseFloat(radio.value) === this.settings.autoAdvanceTime;
+        });
+
+        document.getElementById('autoAdvanceToggle').checked = this.settings.autoAdvance;
+        document.getElementById('soundToggle').checked = this.settings.soundEnabled;
+    }
+
+    closeSettings() {
+        document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    // Избранное
+    loadFavorites() {
+        const saved = localStorage.getItem('keymaster-favorites');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    saveFavorites() {
+        localStorage.setItem('keymaster-favorites', JSON.stringify(this.favorites));
+    }
+
+    toggleFavorite() {
+        const shortcut = this.currentShortcuts[this.currentQuestionIndex];
+        const favoriteKey = `${this.currentCategory}:${shortcut.keys.join('+')}`;
+
+        const index = this.favorites.findIndex(f => f.key === favoriteKey);
+        const button = document.getElementById('favoriteButton');
+
+        if (index >= 0) {
+            // Удалить из избранного
+            this.favorites.splice(index, 1);
+            button.textContent = '⭐ В избранное';
+        } else {
+            // Добавить в избранное
+            this.favorites.push({
+                key: favoriteKey,
+                category: this.currentCategory,
+                shortcut: shortcut
+            });
+            button.textContent = '★ В избранном';
+        }
+
+        this.saveFavorites();
+    }
+
+    startFavorites() {
+        if (this.favorites.length === 0) {
+            alert('У вас пока нет избранных команд. Добавьте их во время тренировки!');
+            return;
+        }
+
+        this.currentMode = 'favorites';
+        this.currentCategory = 'favorites';
+        this.currentShortcuts = this.favorites.map(f => f.shortcut);
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.correctAnswers = 0;
+        this.totalQuestions = this.currentShortcuts.length;
+        this.questionTimes = [];
+        this.currentStreak = 0;
+        this.startTime = Date.now();
+
+        this.hideAllScreens();
+        document.getElementById('trainingScreen').classList.remove('hidden');
+
+        if (!this.visualKeyboard) {
+            this.visualKeyboard = new VisualKeyboard('visualKeyboard');
+            this.visualKeyboard.setClickCallback((clickedKeys) => {
+                this.handleMouseKeyClick(clickedKeys);
+            });
+        }
+
+        this.showQuestion();
+    }
+
+    // История тренировок
+    loadHistory() {
+        const saved = localStorage.getItem('keymaster-history');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    saveToHistory(session) {
+        this.history.unshift(session);
+
+        // Хранить только последние 20 сессий
+        if (this.history.length > 20) {
+            this.history = this.history.slice(0, 20);
+        }
+
+        localStorage.setItem('keymaster-history', JSON.stringify(this.history));
+    }
+
+    renderHistory() {
+        const container = document.getElementById('historyList');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (this.history.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Пока нет истории тренировок</p>';
+            return;
+        }
+
+        // Показать последние 10 тренировок
+        this.history.slice(0, 10).forEach(session => {
+            const date = new Date(session.date);
+            const dateStr = date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const categoryName = session.category === 'favorites'
+                ? 'Избранное'
+                : keyboardData.categories[session.category]?.name || session.category;
+
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <div>
+                    <div class="history-item-date">${dateStr}</div>
+                    <div style="font-weight: 600; margin-top: 0.25rem;">${categoryName} (${session.level || 'medium'})</div>
+                </div>
+                <div class="history-item-stats">
+                    <div class="history-item-stat">
+                        <div class="history-item-stat-value">${session.accuracy}%</div>
+                        <div class="history-item-stat-label">Точность</div>
+                    </div>
+                    <div class="history-item-stat">
+                        <div class="history-item-stat-value">${session.score}</div>
+                        <div class="history-item-stat-label">Очки</div>
+                    </div>
+                    <div class="history-item-stat">
+                        <div class="history-item-stat-value">${session.bestStreak} 🔥</div>
+                        <div class="history-item-stat-label">Серия</div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    // Прогресс по категориям
+    loadCategoryProgress() {
+        const saved = localStorage.getItem('keymaster-category-progress');
+        return saved ? JSON.parse(saved) : {};
+    }
+
+    updateCategoryProgress(categoryId) {
+        if (!categoryId || categoryId === 'favorites') return;
+
+        if (!this.categoryProgress[categoryId]) {
+            this.categoryProgress[categoryId] = {
+                learned: new Set(),
+                total: 0
+            };
+        }
+
+        const shortcut = this.currentShortcuts[this.currentQuestionIndex];
+        const key = shortcut.keys.join('+');
+
+        if (!this.categoryProgress[categoryId].learned) {
+            this.categoryProgress[categoryId].learned = new Set();
+        } else if (Array.isArray(this.categoryProgress[categoryId].learned)) {
+            this.categoryProgress[categoryId].learned = new Set(this.categoryProgress[categoryId].learned);
+        }
+
+        this.categoryProgress[categoryId].learned.add(key);
+        this.categoryProgress[categoryId].total = getShortcutsForCategory(categoryId).length;
+
+        // Сохранить (преобразовать Set в Array)
+        const toSave = {};
+        for (const cat in this.categoryProgress) {
+            toSave[cat] = {
+                learned: Array.from(this.categoryProgress[cat].learned || []),
+                total: this.categoryProgress[cat].total
+            };
+        }
+        localStorage.setItem('keymaster-category-progress', JSON.stringify(toSave));
+    }
+
+    renderCategoryProgress() {
+        const container = document.getElementById('categoryProgress');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        const categories = getAllCategories();
+
+        categories.forEach(cat => {
+            const progress = this.categoryProgress[cat.id];
+            const learned = progress ? (progress.learned?.size || progress.learned?.length || 0) : 0;
+            const total = cat.shortcuts.length;
+            const percentage = total > 0 ? Math.round((learned / total) * 100) : 0;
+
+            const item = document.createElement('div');
+            item.className = 'category-progress-item';
+            item.innerHTML = `
+                <div class="category-progress-header">
+                    <div class="category-progress-name">
+                        <span>${cat.icon}</span>
+                        <span>${cat.name}</span>
+                    </div>
+                    <div class="category-progress-percentage">${percentage}%</div>
+                </div>
+                <div class="category-progress-bar">
+                    <div class="category-progress-fill" style="width: ${percentage}%">
+                        ${learned}/${total}
+                    </div>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    // Режим экзамена
+    startExam(level) {
+        console.log('🎓 Запуск режима ЭКЗАМЕН, уровень:', level);
+        this.currentMode = 'exam';
+        this.currentCategory = 'exam';
+        this.currentLevel = level;
+        console.log('✅ currentMode установлен в:', this.currentMode);
+
+        // Получить случайные команды из ВСЕХ категорий
+        const allCategories = getAllCategories();
+        let allShortcuts = [];
+
+        allCategories.forEach(cat => {
+            let shortcuts = cat.shortcuts;
+
+            // Фильтровать по уровню сложности
+            if (level === 'easy') {
+                shortcuts = shortcuts.filter(s => s.difficulty === 'easy');
+            } else if (level === 'medium') {
+                shortcuts = shortcuts.filter(s => s.difficulty === 'easy' || s.difficulty === 'medium');
+            }
+
+            allShortcuts = allShortcuts.concat(shortcuts);
+        });
+
+        // Получить количество вопросов из настроек
+        let count = 10;
+        if (this.settings.questionCount === 'all') {
+            count = allShortcuts.length;
+        } else {
+            count = parseInt(this.settings.questionCount);
+        }
+
+        // Перемешать и выбрать случайные
+        this.currentShortcuts = allShortcuts
+            .sort(() => Math.random() - 0.5)
+            .slice(0, Math.min(count, allShortcuts.length));
+
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.correctAnswers = 0;
+        this.totalQuestions = this.currentShortcuts.length;
+        this.questionTimes = [];
+        this.currentStreak = 0;
+        this.startTime = Date.now();
+
+        this.hideAllScreens();
+        document.getElementById('trainingScreen').classList.remove('hidden');
+
+        if (!this.visualKeyboard) {
+            this.visualKeyboard = new VisualKeyboard('visualKeyboard');
+            this.visualKeyboard.setClickCallback((clickedKeys) => {
+                this.handleMouseKeyClick(clickedKeys);
+            });
+        }
+
+        this.showQuestion();
     }
 }
 

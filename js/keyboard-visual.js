@@ -4,7 +4,14 @@ class VisualKeyboard {
         this.container = document.getElementById(containerId);
         this.keyElements = {};
         this.layout = this.getKeyboardLayout();
+        this.clickCallback = null;
+        this.clickedKeys = new Set();
         this.render();
+    }
+
+    // Установить callback для обработки кликов
+    setClickCallback(callback) {
+        this.clickCallback = callback;
     }
 
     getKeyboardLayout() {
@@ -122,6 +129,11 @@ class VisualKeyboard {
                 keyElement.dataset.code = keyConfig.code;
                 keyElement.dataset.key = keyConfig.key;
 
+                // Добавляем обработчик клика
+                keyElement.addEventListener('click', (e) => {
+                    this.handleKeyClick(keyConfig.key);
+                });
+
                 // Сохраняем ссылку на элемент для дальнейшей подсветки
                 const keyId = this.getKeyId(keyConfig.code, keyConfig.key);
                 this.keyElements[keyId] = keyElement;
@@ -236,5 +248,48 @@ class VisualKeyboard {
         if (keyElement) {
             keyElement.classList.remove('key-pressed');
         }
+    }
+
+    // Обработчик клика по клавише мышкой
+    handleKeyClick(key) {
+        // Нормализуем название клавиши
+        let normalizedKey = key;
+        if (key === 'Shift' || key === 'Ctrl' || key === 'Alt' || key === 'Win') {
+            normalizedKey = key;
+        } else if (key === 'Space') {
+            normalizedKey = 'Space';
+        } else if (key.length === 1) {
+            normalizedKey = key.toUpperCase();
+        }
+
+        // Проверяем, была ли клавиша уже нажата
+        if (this.clickedKeys.has(normalizedKey)) {
+            // Убираем клавишу из нажатых
+            this.clickedKeys.delete(normalizedKey);
+            const keyElement = this.findKeyElement(key);
+            if (keyElement) {
+                keyElement.classList.remove('key-pressed');
+            }
+        } else {
+            // Добавляем клавишу в нажатые
+            this.clickedKeys.add(normalizedKey);
+            this.highlightKey(key, 'pressed');
+        }
+
+        // Вызываем callback если он установлен
+        if (this.clickCallback) {
+            this.clickCallback(Array.from(this.clickedKeys));
+        }
+    }
+
+    // Очистить клики
+    clearClicks() {
+        this.clickedKeys.clear();
+        this.clearAllHighlights();
+    }
+
+    // Получить нажатые клавиши
+    getClickedKeys() {
+        return Array.from(this.clickedKeys);
     }
 }

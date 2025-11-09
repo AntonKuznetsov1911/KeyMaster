@@ -209,6 +209,102 @@ body {
     font-size: 0.9rem;
 }
 
+/* ===== Level Selection ===== */
+.level-selection {
+    padding: 2rem;
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.level-card {
+    background: var(--bg-primary);
+    border: 3px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.level-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.level-easy {
+    border-color: #10b981;
+}
+
+.level-easy:hover {
+    border-color: #059669;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+.level-medium {
+    border-color: #f59e0b;
+}
+
+.level-medium:hover {
+    border-color: #d97706;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+}
+
+.level-hard {
+    border-color: #ef4444;
+}
+
+.level-hard:hover {
+    border-color: #dc2626;
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+}
+
+.level-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.level-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.level-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.level-badge {
+    display: inline-block;
+    padding: 0.375rem 0.875rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.level-easy .level-badge {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.level-medium .level-badge {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.level-hard .level-badge {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 /* ===== Training Screen ===== */
 .training-screen {
     padding: 2rem;
@@ -218,15 +314,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .training-info {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .category-badge {
@@ -268,41 +364,65 @@ body {
 /* ===== Challenge Area ===== */
 .challenge-area {
     background: var(--bg-primary);
-    border-radius: 1rem;
-    padding: 3rem;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
     text-align: center;
     box-shadow: var(--shadow-lg);
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .command-description {
     font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.5rem;
     color: var(--text-primary);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    border-radius: 1rem;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+    text-align: center;
+    line-height: 1.4;
 }
 
 .expected-keys {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
     color: var(--text-secondary);
+}
+
+.expected-keys.hidden-keys {
+    opacity: 0.6;
+}
+
+.expected-keys.hidden-keys .hint-placeholder {
+    background: linear-gradient(135deg, var(--warning-color), #f97316);
+    border-color: var(--warning-color);
+    color: white;
+    animation: pulse-hint 2s infinite;
+}
+
+@keyframes pulse-hint {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
 .key {
     display: inline-block;
     background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
     border: 2px solid var(--border-color);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.875rem;
     font-weight: 600;
     font-family: 'Courier New', monospace;
     box-shadow: var(--shadow);
-    min-width: 3rem;
+    min-width: 2.5rem;
     text-align: center;
+    font-size: 0.95rem;
 }
 
 .key.pressed {
@@ -313,28 +433,28 @@ body {
 }
 
 .instruction {
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .pressed-keys {
-    min-height: 4rem;
+    min-height: 2.5rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .feedback {
-    min-height: 3rem;
+    min-height: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 
 .feedback.correct {
@@ -347,14 +467,49 @@ body {
     animation: shake 0.5s;
 }
 
+.command-demo {
+    min-height: 80px;
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border: 2px dashed var(--border-color);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    animation: fadeIn 0.5s;
+}
+
+.command-demo.show {
+    display: flex;
+}
+
+.command-demo-content {
+    text-align: center;
+}
+
+.command-demo-icon {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    animation: pulse 1s infinite;
+}
+
+.command-demo-text {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
 /* ===== Keyboard ===== */
 .keyboard-container {
     display: flex;
     justify-content: center;
-    padding: 2rem;
+    padding: 1rem;
     background: var(--bg-primary);
-    border-radius: 1rem;
-    margin-bottom: 2rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
     box-shadow: var(--shadow);
 }
 
@@ -372,16 +527,27 @@ body {
 .keyboard-key {
     background: var(--bg-tertiary);
     border: 2px solid var(--border-color);
-    border-radius: 0.35rem;
-    padding: 0.75rem 0.5rem;
-    min-width: 3.5em;
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.35rem;
+    min-width: 2.8em;
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
     font-family: 'Courier New', monospace;
     transition: all 0.2s;
-    cursor: default;
+    cursor: pointer;
     user-select: none;
+}
+
+.keyboard-key:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.keyboard-key:active {
+    transform: translateY(0);
 }
 
 .keyboard-key.key-pressed {
@@ -748,6 +914,306 @@ body {
         transform: translateY(0);
         opacity: 1;
     }
+}
+
+/* ===== New Features Styles ===== */
+
+/* Menu Header with Settings Button */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.settings-button {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: all 0.3s;
+}
+
+.settings-button:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Streak Counter */
+.streak-stat {
+    position: relative;
+}
+
+.streak-value {
+    font-weight: 700;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.streak-stat.milestone {
+    animation: streak-milestone 0.6s ease-out;
+}
+
+@keyframes streak-milestone {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+/* Question Timer */
+.question-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.timer-icon {
+    font-size: 1.25rem;
+}
+
+.timer-value {
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    min-width: 4rem;
+    text-align: center;
+}
+
+.timer-value.fast {
+    color: var(--success-color);
+}
+
+.timer-value.slow {
+    color: var(--warning-color);
+}
+
+/* Settings Modal */
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.setting-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.radio-option:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-secondary);
+}
+
+.radio-option input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"]:checked + span {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.toggle-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.toggle-option input[type="checkbox"] {
+    position: relative;
+    width: 3rem;
+    height: 1.5rem;
+    appearance: none;
+    background: var(--border-color);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.toggle-option input[type="checkbox"]:checked {
+    background: var(--success-color);
+}
+
+.toggle-option input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: white;
+    top: 0.125rem;
+    left: 0.125rem;
+    transition: all 0.3s;
+}
+
+.toggle-option input[type="checkbox"]:checked::before {
+    left: 1.625rem;
+}
+
+/* History Section */
+.history-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.history-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.history-chart {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.history-item-date {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.history-item-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.history-item-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.history-item-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.history-item-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Progress Section */
+.progress-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.progress-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.category-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.category-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.category-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-progress-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.category-progress-percentage {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.category-progress-bar {
+    height: 1.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.category-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 1rem;
+    transition: width 1s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.75rem;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 /* ===== Responsive ===== */

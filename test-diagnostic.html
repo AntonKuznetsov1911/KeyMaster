@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностика KeyMaster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 { color: #333; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .key-display {
+            font-size: 24px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 5px;
+            text-align: center;
+            min-height: 60px;
+            margin: 20px 0;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #4f46e5; }
+        .command-test {
+            border: 2px solid #6366f1;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🔧 Диагностика KeyMaster</h1>
+
+        <div class="status info">
+            <strong>Инструкция:</strong> Этот тест проверит, работает ли распознавание клавиш
+        </div>
+
+        <div class="command-test">
+            <h2>Тест 1: Нажатие клавиш</h2>
+            <p>Нажмите любую комбинацию клавиш (например Ctrl+C):</p>
+            <div class="key-display" id="keyDisplay">Ожидание нажатия...</div>
+            <div id="keyInfo"></div>
+        </div>
+
+        <div class="command-test">
+            <h2>Тест 2: Проверка preventDefault</h2>
+            <textarea id="testArea" style="width: 100%; padding: 10px; margin: 10px 0;" rows="3">Выделите этот текст и нажмите Ctrl+C. Если текст НЕ скопировался - preventDefault работает!</textarea>
+            <button onclick="testClipboard()">Проверить буфер обмена</button>
+            <div id="clipboardResult"></div>
+        </div>
+
+        <div class="command-test">
+            <h2>Тест 3: Загрузка файлов</h2>
+            <div id="filesStatus">Проверка...</div>
+        </div>
+
+        <button onclick="window.location.href='http://localhost:8000'">Открыть KeyMaster</button>
+    </div>
+
+    <script>
+        let pressedKeys = new Set();
+
+        // Тест 1: Отслеживание клавиш
+        document.addEventListener('keydown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const key = normalizeKey(e);
+            pressedKeys.add(key);
+            updateKeyDisplay();
+        });
+
+        document.addEventListener('keyup', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const key = normalizeKey(e);
+            pressedKeys.delete(key);
+
+            if (pressedKeys.size === 0) {
+                setTimeout(() => {
+                    document.getElementById('keyDisplay').innerHTML = 'Ожидание нажатия...';
+                }, 1000);
+            }
+        });
+
+        function normalizeKey(event) {
+            const key = event.key;
+            const code = event.code;
+
+            if (key === 'Control' || code.includes('Control')) return 'Ctrl';
+            if (key === 'Alt' || code.includes('Alt')) return 'Alt';
+            if (key === 'Shift' || code.includes('Shift')) return 'Shift';
+            if (key === 'Meta' || code.includes('Meta') || key === 'OS') return 'Win';
+
+            if (key.length === 1) return key.toUpperCase();
+            return key;
+        }
+
+        function updateKeyDisplay() {
+            const keys = Array.from(pressedKeys);
+            const display = document.getElementById('keyDisplay');
+            const info = document.getElementById('keyInfo');
+
+            if (keys.length > 0) {
+                display.innerHTML = keys.map(k => `<span style="background: #6366f1; color: white; padding: 8px 16px; border-radius: 5px; margin: 0 5px;">${k}</span>`).join(' + ');
+                info.innerHTML = `<div class="status success">✅ Клавиши распознаются правильно! Нажато: ${keys.length}</div>`;
+            }
+        }
+
+        // Тест 2: Буфер обмена
+        async function testClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const resultDiv = document.getElementById('clipboardResult');
+
+                if (text === '') {
+                    resultDiv.innerHTML = '<div class="status success">✅ Отлично! Буфер обмена пуст - preventDefault работает!</div>';
+                } else if (text.includes('Выделите этот текст')) {
+                    resultDiv.innerHTML = '<div class="status error">❌ Текст скопировался! preventDefault НЕ работает!</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="status info">В буфере другой текст: "' + text.substring(0, 50) + '..."</div>';
+                }
+            } catch (err) {
+                document.getElementById('clipboardResult').innerHTML = '<div class="status info">Не удалось прочитать буфер обмена (это нормально в некоторых браузерах)</div>';
+            }
+        }
+
+        // Тест 3: Проверка загрузки файлов
+        window.addEventListener('load', () => {
+            const filesDiv = document.getElementById('filesStatus');
+            filesDiv.innerHTML = `
+                <div class="status success">✅ HTML загружен</div>
+                <div class="status success">✅ JavaScript работает</div>
+                <div class="status success">✅ Event listeners работают</div>
+                <div class="status info">Сервер: http://localhost:8000</div>
+            `;
+        });
+    </script>
+</body>
+</html>
