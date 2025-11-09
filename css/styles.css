@@ -511,6 +511,28 @@ body {
     border-radius: 0.75rem;
     margin-bottom: 1rem;
     box-shadow: var(--shadow);
+    position: relative;
+}
+
+.keyboard-toggle {
+    display: none;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 10;
+    transition: all 0.3s;
+}
+
+.keyboard-toggle:hover {
+    background: var(--secondary-color);
 }
 
 .keyboard {
@@ -1217,13 +1239,25 @@ body {
 }
 
 /* ===== Responsive ===== */
+@media (max-width: 1024px) {
+    .keyboard-key {
+        font-size: 0.75rem;
+        padding: 0.6rem 0.4rem;
+        min-width: 3em;
+    }
+}
+
 @media (max-width: 768px) {
     .header {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
     }
 
     .logo h1 {
         font-size: 1.25rem;
+    }
+
+    .logo-icon {
+        font-size: 1.5rem;
     }
 
     .menu-title {
@@ -1238,53 +1272,326 @@ body {
     .training-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .training-info {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .training-stats {
+        width: 100%;
+        justify-content: space-around;
     }
 
     .challenge-area {
-        padding: 1.5rem;
+        padding: 1.25rem;
     }
 
     .command-description {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
+        line-height: 1.4;
+    }
+
+    .expected-keys {
+        font-size: 1rem;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .key {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        min-width: 2.5rem;
+    }
+
+    .instruction {
+        font-size: 0.9rem;
     }
 
     .keyboard-container {
-        padding: 1rem;
+        padding: 0.5rem;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .keyboard-toggle {
+        display: block;
+    }
+
+    .keyboard-container.collapsed .keyboard {
+        display: none;
+    }
+
+    .keyboard-container.collapsed {
+        padding: 1rem;
+        min-height: auto;
+    }
+
+    .keyboard {
+        transform: scale(0.85);
+        transform-origin: center;
     }
 
     .keyboard-key {
-        font-size: 0.7rem;
-        padding: 0.5rem 0.25rem;
-        min-width: 2.5em;
+        font-size: 0.65rem;
+        padding: 0.45rem 0.2rem;
+        min-width: 2.2em;
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-card {
+        padding: 1.5rem;
+    }
+
+    .stat-card-value {
+        font-size: 2rem;
     }
 
     .modal-content {
         padding: 2rem 1.5rem;
     }
+
+    .categories-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .category-card {
+        padding: 1.25rem;
+    }
+
+    .achievements-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 480px) {
+    .app-container {
+        padding: 0;
+    }
+
+    .header {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .logo h1 {
+        font-size: 1.1rem;
+    }
+
+    .logo-icon {
+        font-size: 1.25rem;
+    }
+
+    .theme-toggle {
+        padding: 0.4rem 0.75rem;
+        font-size: 1rem;
+    }
+
+    .main-menu {
+        padding: 1.5rem 1rem;
+    }
+
+    .menu-title {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .menu-card {
+        padding: 1.5rem;
+    }
+
+    .card-icon {
+        font-size: 3rem;
+    }
+
+    .training-screen,
+    .category-selection,
+    .reference-screen,
+    .stats-screen {
+        padding: 1rem;
+    }
+
+    .challenge-area {
+        padding: 1rem;
+    }
+
+    .command-description {
+        font-size: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
     .expected-keys {
-        flex-wrap: wrap;
+        font-size: 0.9rem;
+        gap: 0.4rem;
+    }
+
+    .key {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        min-width: 2rem;
+    }
+
+    .pressed-keys {
+        min-height: 3rem;
+        gap: 0.5rem;
+    }
+
+    .feedback {
+        min-height: 2.5rem;
+        font-size: 1.25rem;
+    }
+
+    .keyboard {
+        transform: scale(0.7);
+    }
+
+    .keyboard-key {
+        font-size: 0.55rem;
+        padding: 0.35rem 0.15rem;
+        min-width: 2em;
+        border-width: 1px;
+    }
+
+    .keyboard-row {
+        gap: 0.15rem;
+        margin-bottom: 0.15rem;
+    }
+
+    .training-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        padding: 0.75rem;
     }
 
     .training-stats {
-        flex-direction: column;
-        gap: 0.5rem;
+        flex-direction: row;
+        gap: 1rem;
+        justify-content: space-between;
+    }
+
+    .stat {
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+    }
+
+    .progress-indicator {
+        font-size: 1rem;
+    }
+
+    .category-badge {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
     }
 
     .reference-controls {
         flex-direction: column;
     }
 
+    .search-input,
+    .category-filter {
+        width: 100%;
+        font-size: 0.9rem;
+        padding: 0.65rem 0.85rem;
+    }
+
     .shortcut-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .shortcut-keys {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .shortcuts-section {
+        padding: 1rem;
+    }
+
+    .shortcuts-section-header {
+        font-size: 1.25rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        padding: 1.25rem;
+    }
+
+    .achievements-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .achievement-card {
+        padding: 1.25rem;
+    }
+
+    .modal-content {
+        padding: 1.5rem 1rem;
+        width: 95%;
+    }
+
+    .modal-content h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .result-value {
+        font-size: 1.1rem;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .modal-buttons .btn-primary,
+    .modal-buttons .btn-secondary {
+        width: 100%;
+    }
+
+    .back-button {
+        padding: 0.6rem 1.25rem;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .keyboard {
+        transform: scale(0.6);
+    }
+
+    .keyboard-container {
+        padding: 0.25rem;
+    }
+
+    .command-description {
+        font-size: 0.95rem;
+    }
+
+    .expected-keys {
+        font-size: 0.85rem;
     }
 }

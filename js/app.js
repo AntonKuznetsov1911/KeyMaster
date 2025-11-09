@@ -114,6 +114,9 @@ class KeyMasterApp {
         // Переключатель темы
         document.getElementById('themeToggle')?.addEventListener('click', () => this.toggleTheme());
 
+        // Переключатель видимости клавиатуры
+        document.getElementById('keyboardToggle')?.addEventListener('click', () => this.toggleKeyboard());
+
         // Поиск в справочнике
         document.getElementById('searchInput')?.addEventListener('input', (e) => this.filterShortcuts(e.target.value));
         document.getElementById('categoryFilter')?.addEventListener('change', (e) => this.filterByCategory(e.target.value));
@@ -1030,6 +1033,20 @@ class KeyMasterApp {
         if (theme === 'dark') {
             document.body.classList.add('dark-theme');
             document.querySelector('.theme-icon').textContent = '☀️';
+        }
+    }
+
+    // Переключение видимости клавиатуры
+    toggleKeyboard() {
+        const container = document.getElementById('keyboardContainer');
+        const button = document.getElementById('keyboardToggle');
+
+        if (container.classList.contains('collapsed')) {
+            container.classList.remove('collapsed');
+            button.textContent = 'Скрыть клавиатуру';
+        } else {
+            container.classList.add('collapsed');
+            button.textContent = 'Показать клавиатуру';
         }
     }
 
