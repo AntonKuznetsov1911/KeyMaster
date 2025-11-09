@@ -1219,7 +1219,7 @@ body {
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .header {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
     }
 
     .logo h1 {
@@ -1227,64 +1227,223 @@ body {
     }
 
     .menu-title {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
     }
 
     .menu-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 1rem;
     }
 
     .training-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .training-stats {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .challenge-area {
-        padding: 1.5rem;
+        padding: 1rem;
     }
 
     .command-description {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .question-timer {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
     }
 
     .keyboard-container {
-        padding: 1rem;
+        padding: 0.5rem;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .keyboard {
+        min-width: 100%;
+        transform: scale(0.85);
+        transform-origin: top left;
+    }
+
+    .keyboard-row {
+        gap: 0.15rem;
     }
 
     .keyboard-key {
-        font-size: 0.7rem;
-        padding: 0.5rem 0.25rem;
-        min-width: 2.5em;
+        font-size: 0.65rem;
+        padding: 0.4rem 0.2rem;
+        min-width: 2.2em;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .modal-content {
+        padding: 1.5rem 1rem;
+        max-width: 95%;
+    }
+
+    .categories-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .levels-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .training-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .training-controls button {
+        flex: 1 1 45%;
+        min-width: 45%;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    .header {
+        padding: 0.5rem;
+    }
+
+    .logo h1 {
+        font-size: 1.1rem;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .menu-card {
+        padding: 1rem;
+    }
+
+    .command-description {
+        font-size: 1.1rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .expected-keys {
+        flex-wrap: wrap;
+        font-size: 0.9rem;
+    }
+
+    .key {
+        padding: 0.4rem 0.65rem;
+        font-size: 0.85rem;
+        min-width: 2rem;
+    }
+
+    .training-stats {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .stat {
+        flex: 1 1 45%;
+    }
+
+    .keyboard {
+        transform: scale(0.7);
+        transform-origin: top center;
+    }
+
+    .keyboard-key {
+        font-size: 0.55rem;
+        padding: 0.35rem 0.15rem;
+        min-width: 2em;
+    }
+
+    .reference-controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .shortcut-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .categories-grid,
+    .levels-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .category-card,
+    .level-card {
+        padding: 1rem;
     }
 
     .stats-grid {
         grid-template-columns: 1fr;
     }
 
+    .training-controls {
+        flex-direction: column;
+    }
+
+    .training-controls button {
+        width: 100%;
+        min-width: 100%;
+    }
+
     .modal-content {
-        padding: 2rem 1.5rem;
+        padding: 1rem;
+        max-width: 100%;
+        margin: 1rem;
+    }
+
+    .achievements-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .history-item {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .history-item-stats {
+        width: 100%;
+        justify-content: space-around;
     }
 }
 
-@media (max-width: 480px) {
-    .expected-keys {
-        flex-wrap: wrap;
+/* Очень маленькие экраны */
+@media (max-width: 360px) {
+    .keyboard {
+        transform: scale(0.6);
+    }
+
+    .keyboard-key {
+        font-size: 0.5rem;
+        padding: 0.3rem 0.1rem;
+    }
+
+    .command-description {
+        font-size: 1rem;
     }
 
     .training-stats {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .reference-controls {
-        flex-direction: column;
-    }
-
-    .shortcut-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+        font-size: 0.85rem;
     }
 }
